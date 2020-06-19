@@ -12,7 +12,7 @@ type DevicesResponse struct {
 var limitParam = &IntParam{
 	Name:        "limit",
 	Description: "return up to this many records",
-	Default:     100,
+	Default:     "100",
 }
 
 func main() {
@@ -30,17 +30,22 @@ func main() {
 						Name:        "List Devices",
 						Description: "Return a JSON list of devices matching query filters",
 						Params: []Param{
-							&StringParam{
-								Name:         "deviceType",
-								Description:  "type of device, like BCM-scrubber, LBCM-whiz, etc.",
-								Default: "",
-							},
+							//&StringParam{
+							//	Name:         "deviceType",
+							//	Description:  "type of device as found in /v1/device-types",
+							//	Example: "BCM-scrubber",
+							//},
 							limitParam,
 						},
-						Run: func(w http.ResponseWriter, r *http.Request) {
-							fmt.Fprint(w, "hello!")
+						Run: func(a *Context) (interface{}, *Error) {
+							fmt.Println("deviceType:", a.GetStringParam("deviceType"))
+							fmt.Println("limit:", a.GetIntParam("limit"))
+							return &DevicesResponse{DeviceType: "catdog"}, nil
 						},
 						Response: DevicesResponse{},
+						Errors: []*Error{
+							ErrUnauthorized,
+						},
 					},
 				},
 			},
@@ -50,8 +55,8 @@ func main() {
 	bp := api.GetBlueprint()
 	fmt.Println(bp)
 
-	//r := devices.Router()
-	//http.ListenAndServe(":8080", r)
+	r := api.Router()
+	http.ListenAndServe(":8080", r)
 
 	//mk := markdown.ToHTML([]byte(bp), nil, nil)
 	//http.HandleFunc("/docs", func(w http.ResponseWriter, r *http.Request){
@@ -61,17 +66,6 @@ func main() {
 	//
 	//log.Fatal(http.ListenAndServe(":8080", nil))
 }
-
-
-type ActionRequest struct {
-	action *Action
-}
-
-type ActionRunner func(a *ActionRequest, w http.ResponseWriter, r *http.Request)
-
-
-
-
 
 
 

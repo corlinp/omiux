@@ -1,6 +1,8 @@
 package main
 
-import "github.com/gorilla/mux"
+import (
+	"strings"
+)
 
 type Endpoint struct {
 	Path        string
@@ -9,17 +11,20 @@ type Endpoint struct {
 	Actions     []*Action
 }
 
-func (ep *Endpoint) Router() *mux.Router {
-	r := mux.NewRouter()
-	for _, a := range ep.Actions {
-		r.HandleFunc(ep.Path, a.Run).Methods(a.Method)
-	}
-	return r
-}
 
 func (ep *Endpoint) GetBlueprint() string {
+	allParams := map[string]string{}
+	for _, a := range ep.Actions {
+		for _, p := range a.Params {
+			allParams[p.GetName()] = p.GetName()
+		}
+	}
+	allParamsList := []string{}
+	for n := range allParams {
+		allParamsList = append(allParamsList, n)
+	}
 	out := &simpleWriter{}
-	out.F("## %s [%s]\n", ep.Name, ep.Path)
+	out.F("## %s [%s{?%s}]\n", ep.Name, ep.Path, strings.Join(allParamsList, ","))
 	out.P(ep.Description)
 	for _, a := range ep.Actions {
 		out.P()
