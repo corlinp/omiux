@@ -59,7 +59,7 @@ func (p *StringParam) Parse(s string) (interface{}, error) {
 }
 
 func GetParamBlueprint(p Param) string {
-	out := blueprintWriter{}
+	out := simpleWriter{}
 	reqString := "optional"
 	if p.IsRequired() {
 		reqString = "Required"

@@ -8,7 +8,7 @@ type API struct {
 }
 
 func (api *API) GetBlueprint() string {
-	out := &blueprintWriter{}
+	out := &simpleWriter{}
 	out.P("FORMAT: 1A\n")
 	out.F("# %s", api.Name)
 	out.P(api.Description)
@@ -18,4 +18,3 @@ func (api *API) GetBlueprint() string {
 	}
 	return out.String()
 }
-

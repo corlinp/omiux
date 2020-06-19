@@ -15,7 +15,7 @@ type Action struct {
 }
 
 func (a *Action) GetBlueprint() string {
-	out := &blueprintWriter{}
+	out := &simpleWriter{}
 	out.F("### %s [%s]\n", a.Name, a.Method)
 	out.P(a.Description)
 	out.P("\n")
@@ -33,4 +33,31 @@ func (a *Action) GetBlueprint() string {
 		out.P("\n")
 	}
 	return out.String()
+}
+
+type ActionContext struct {
+	params map[string]interface{}
+}
+
+func (a *ActionContext) GetStringParam(name string) string {
+	out, ok := a.params[name].(string)
+	if !ok {
+		panic("param is not of the right type!")
+	}
+	return out
+}
+
+func (a *Action) parseRequest(w http.ResponseWriter, r *http.Request) (*ActionContext, error) {
+	out := &ActionContext{
+		params: make(map[string]interface{}),
+	}
+	for _, p := range a.Params {
+		s := r.URL.Query().Get(p.GetName())
+		v, err := p.Parse(s)
+		if err != nil {
+			return nil, err
+		}
+		out.params[p.GetName()] = v
+	}
+	return out, nil
 }

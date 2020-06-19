@@ -18,7 +18,7 @@ func (ep *Endpoint) Router() *mux.Router {
 }
 
 func (ep *Endpoint) GetBlueprint() string {
-	out := &blueprintWriter{}
+	out := &simpleWriter{}
 	out.F("## %s [%s]\n", ep.Name, ep.Path)
 	out.P(ep.Description)
 	for _, a := range ep.Actions {

@@ -5,21 +5,21 @@ import (
 	"strings"
 )
 
-type blueprintWriter struct {
+type simpleWriter struct {
 	strings.Builder
 }
 
-func (b *blueprintWriter) F(s string, v ...interface{}) {
+func (b *simpleWriter) F(s string, v ...interface{}) {
 	b.WriteString(fmt.Sprintf(s, v...))
 	b.WriteString("\n")
 }
 
-func (b *blueprintWriter) P(v ...interface{}) {
+func (b *simpleWriter) P(v ...interface{}) {
 	b.WriteString(fmt.Sprint(v...))
 	b.WriteString("\n")
 }
 
 
-func (b *blueprintWriter) S(v ...interface{}) {
+func (b *simpleWriter) S(v ...interface{}) {
 	b.WriteString(fmt.Sprint(v...))
 }
