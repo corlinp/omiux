@@ -1,8 +1,8 @@
-package main
+package omiux
 
 import (
 	"encoding/json"
-	"fmt"
+	"github.com/pkg/errors"
 	"net/http"
 )
 
@@ -110,7 +110,7 @@ func (a *Action) parseRequest(w http.ResponseWriter, r *http.Request) (*Context,
 		s := r.URL.Query().Get(p.Info().Name)
 		v, err := p.Parse(s)
 		if err != nil {
-			return nil, err
+			return nil, errors.Wrap(err, "parsing " + p.Info().Name)
 		}
 		out.params[p.Info().Name] = v
 	}
@@ -120,12 +120,12 @@ func (a *Action) parseRequest(w http.ResponseWriter, r *http.Request) (*Context,
 func (a *Action) contexter(w http.ResponseWriter, r *http.Request) {
 	ac, err := a.parseRequest(w, r)
 	if err != nil {
-		w.WriteHeader(rerr.Status)
+		w.WriteHeader(ErrParsingParameter.Status)
 		errResp := &ErrorResponse{
-			Status:  rerr.Status,
-			Code:    rerr.Code,
-			Message: rerr.Message,
-			Info:    rerr.info,
+			Status:  ErrParsingParameter.Status,
+			Code:    ErrParsingParameter.Code,
+			Message: ErrParsingParameter.Message,
+			Info:    err.Error(),
 			Path:    r.RequestURI,
 		}
 		_ = json.NewEncoder(w).Encode(errResp)

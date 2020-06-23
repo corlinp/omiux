@@ -1,4 +1,4 @@
-package main
+package omiux
 
 import "net/http"
 
