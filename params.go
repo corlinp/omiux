@@ -1,56 +1,49 @@
 package main
 
 import (
-	"fmt"
 	"github.com/pkg/errors"
 	"strconv"
 )
 
 type Param interface {
-	GetName() string
-	GetDescription() string
-	TypeName() string
-	GetDefault() string
-	IsRequired() bool
 	Parse(s string) (interface{}, error)
+	TypeName() string
+	Info() *ParamInfo
+}
+
+type ParamInfo struct {
+	Name        string
+	Description string
+	Example     string
+	Default     string
+	Required    bool
+}
+
+
+func GetParamBlueprint(p Param) string {
+	out := simpleWriter{}
+	reqString := "optional"
+	if p.Info().Required {
+		reqString = "Required"
+	}
+	out.F("    + %s: `%s` (%s, %s) - %s", p.Info().Name, p.Info().Example, p.TypeName(), reqString, p.Info().Description)
+	if p.Info().Default != "" {
+		out.F("        + Default: %s", p.Info().Default)
+	}
+	return out.String()
 }
 
 // STRING
 
-type StringParam struct {
-	Name string
-	Description string
-	Default string
-	required bool
-}
-
-func (p *StringParam) GetName() string {
-	return p.Name
-}
-
-func (p *StringParam) GetDescription() string {
-	return p.Description
-}
-
-func (p *StringParam) Get() string {
-	return p.Default
-}
+type StringParam ParamInfo
 
 func (p *StringParam) TypeName() string {
 	return "string"
 }
 
-func (p *StringParam) IsRequired() bool {
-	return p.required
-}
-
-func (p *StringParam) GetDefault() string {
-	return fmt.Sprint(p.Default)
-}
-
 func (p *StringParam) Parse(s string) (interface{}, error) {
 	if s == "" {
-		if p.required {
+		if p.Required {
 			return nil, errors.New("this should be a nice error")
 		}
 		return p.Default, nil
@@ -58,50 +51,17 @@ func (p *StringParam) Parse(s string) (interface{}, error) {
 	return s, nil
 }
 
-func GetParamBlueprint(p Param) string {
-	out := simpleWriter{}
-	reqString := "optional"
-	if p.IsRequired() {
-		reqString = "Required"
-	}
-	out.F("\t+ %s: (%s, %s) - %s", p.GetName(), p.TypeName(), reqString, p.GetDescription())
-	if p.GetDefault() != "" {
-		out.F("\t\t+ Default: %s\n", p.GetDefault())
-	}
-	return out.String()
+func (p *StringParam) Info() *ParamInfo {
+	return (*ParamInfo)(p)
 }
+
 
 // INT
 
-type IntParam struct {
-	Name        string
-	Description string
-	Default     int
-	Required    bool
-}
-
-func (p *IntParam) GetName() string {
-	return p.Name
-}
-
-func (p *IntParam) GetDescription() string {
-	return p.Description
-}
-
-func (p *IntParam) Get() int {
-	return p.Default
-}
+type IntParam ParamInfo
 
 func (p *IntParam) TypeName() string {
 	return "number"
-}
-
-func (p *IntParam) IsRequired() bool {
-	return p.Required
-}
-
-func (p *IntParam) GetDefault() string {
-	return fmt.Sprint(p.Default)
 }
 
 func (p *IntParam) Parse(s string) (interface{}, error) {
@@ -109,32 +69,12 @@ func (p *IntParam) Parse(s string) (interface{}, error) {
 		if p.Required {
 			return nil, errors.New("this should be a nice int error")
 		}
-		return p.Default, nil
+		return strconv.ParseInt(p.Default, 10, 32)
 	}
 	return strconv.ParseInt(s, 10, 32)
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+func (p *IntParam) Info() *ParamInfo {
+	return (*ParamInfo)(p)
+}
 

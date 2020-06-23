@@ -10,13 +10,15 @@ type Action struct {
 	Method      string
 	Name        string
 	Description string
-	Params      []ParamParser
+	Params      []Param
+	Headers      []*Header
+	Request interface{}
 	Response    interface{}
 	Errors 	    []*Error
 	Run         func(a *Context) (interface{}, *Error)
 }
 
-func (a *Action) GetBlueprint() string {
+func (a *Action) GetBlueprint(ep *Endpoint) string {
 	out := &simpleWriter{}
 	out.F("### %s [%s]", a.Name, a.Method)
 	out.P(a.Description)
@@ -28,6 +30,27 @@ func (a *Action) GetBlueprint() string {
 		}
 		out.P()
 	}
+	if a.Request != nil {
+		out.P("+ Request (application/json)")
+	} else {
+		out.P("+ Request")
+	}
+	out.P()
+	if len(a.Headers) > 0 {
+		out.P("    + Headers\n")
+		for _, h := range a.Headers {
+			out.P(h.GetBlueprint())
+		}
+		out.P()
+	}
+	if a.Request != nil {
+		out.P("    + Body\n")
+		j, _ := json.MarshalIndent(a.Request, "            ", "    ")
+		out.S("            ")
+		out.Write(j)
+		out.P("\n")
+	}
+
 	if a.Response != nil {
 		out.P("+ Response 200  (application/json)\n\n    + Body\n")
 		j, _ := json.MarshalIndent(a.Response, "            ", "    ")
@@ -38,7 +61,13 @@ func (a *Action) GetBlueprint() string {
 	if len(a.Errors) > 0 {
 		for _, e := range a.Errors {
 			out.F("+ Response %v  (application/json)\n\n    + Body\n", e.Status)
-			j, _ := json.MarshalIndent(e, "            ", "    ")
+			j, _ := json.MarshalIndent(&ErrorResponse{
+				Status:  e.Status,
+				Code:    e.Code,
+				Message: e.Message,
+				Info:    "-",
+				Path:    ep.Path,
+			}, "            ", "    ")
 			out.S("            ")
 			out.Write(j)
 			out.P("\n")
@@ -78,12 +107,12 @@ func (a *Action) parseRequest(w http.ResponseWriter, r *http.Request) (*Context,
 		params: make(map[string]interface{}),
 	}
 	for _, p := range a.Params {
-		s := r.URL.Query().Get(p.Param().Name)
+		s := r.URL.Query().Get(p.Info().Name)
 		v, err := p.Parse(s)
 		if err != nil {
 			return nil, err
 		}
-		out.params[p.Param().Name] = v
+		out.params[p.Info().Name] = v
 	}
 	return out, nil
 }
@@ -91,13 +120,28 @@ func (a *Action) parseRequest(w http.ResponseWriter, r *http.Request) (*Context,
 func (a *Action) contexter(w http.ResponseWriter, r *http.Request) {
 	ac, err := a.parseRequest(w, r)
 	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		fmt.Fprint(w, err)
+		w.WriteHeader(rerr.Status)
+		errResp := &ErrorResponse{
+			Status:  rerr.Status,
+			Code:    rerr.Code,
+			Message: rerr.Message,
+			Info:    rerr.info,
+			Path:    r.RequestURI,
+		}
+		_ = json.NewEncoder(w).Encode(errResp)
+		return
 	}
 	out, rerr := a.Run(ac)
 	if rerr != nil {
 		w.WriteHeader(rerr.Status)
-		_ = json.NewEncoder(w).Encode(rerr)
+		errResp := &ErrorResponse{
+			Status:  rerr.Status,
+			Code:    rerr.Code,
+			Message: rerr.Message,
+			Info:    rerr.info,
+			Path:    r.RequestURI,
+		}
+		_ = json.NewEncoder(w).Encode(errResp)
 		return
 	}
 	if out != nil {

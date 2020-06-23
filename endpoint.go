@@ -16,7 +16,7 @@ func (ep *Endpoint) GetBlueprint() string {
 	allParams := map[string]string{}
 	for _, a := range ep.Actions {
 		for _, p := range a.Params {
-			allParams[p.GetName()] = p.GetName()
+			allParams[p.Info().Name] = p.Info().Name
 		}
 	}
 	allParamsList := []string{}
@@ -28,7 +28,7 @@ func (ep *Endpoint) GetBlueprint() string {
 	out.P(ep.Description)
 	for _, a := range ep.Actions {
 		out.P()
-		out.P(a.GetBlueprint())
+		out.P(a.GetBlueprint(ep))
 	}
 	out.P()
 	return out.String()

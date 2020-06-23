@@ -2,6 +2,18 @@ package main
 
 import "net/http"
 
+var ErrUnauthorized = &Error {
+	Status: http.StatusUnauthorized,
+	Code: "Unauthorized",
+	Message: "you do not have permission to perform this action",
+}
+
+var ErrParsingParameter = &Error{
+	Status:  http.StatusBadRequest,
+	Code:    "ErrParsingParam",
+	Message: "Could not parse query parameter",
+}
+
 /*
 This is an attempt to make debugging the API more usable by providing standard info in an error
 Let's take a look at a standard AWS error response:
@@ -22,10 +34,23 @@ type Error struct {
 	Status    int         `json:"status,omitempty"`
 	Code      string      `json:"code,omitempty"`
 	Message   string      `json:"message,omitempty"`
+	info string
 }
 
-var ErrUnauthorized = &Error {
-	Status: http.StatusUnauthorized,
-	Code: "Unauthorized",
-	Message: "you do not have permission to perform this action",
+func (e *Error) WithInfo(info string) *Error {
+	return &Error{
+		Status:  e.Status,
+		Code:    e.Code,
+		Message: e.Message,
+		info:    info,
+	}
+}
+
+type ErrorResponse struct {
+	Status    int         `json:"status,omitempty"`
+	Code      string      `json:"code,omitempty"`
+	Message   string      `json:"message,omitempty"`
+	Info      string      `json:"info,omitempty"`
+	Path      string      `json:"resource,omitempty"`
+	//RequestId string `json:"request_id,omitempty"`
 }

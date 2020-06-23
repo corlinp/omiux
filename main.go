@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"net/http"
 )
 
 type DevicesResponse struct {
@@ -30,18 +29,22 @@ func main() {
 						Name:        "List Devices",
 						Description: "Return a JSON list of devices matching query filters",
 						Params: []Param{
-							//&StringParam{
-							//	Name:         "deviceType",
-							//	Description:  "type of device as found in /v1/device-types",
-							//	Example: "BCM-scrubber",
-							//},
+							&StringParam{
+								Name:         "deviceType",
+								Description:  "type of device as found in /v1/device-types",
+								Example: "BCM-scrubber",
+							},
 							limitParam,
+						},
+						Headers: []*Header{
+							HeaderBearerToken,
 						},
 						Run: func(a *Context) (interface{}, *Error) {
 							fmt.Println("deviceType:", a.GetStringParam("deviceType"))
 							fmt.Println("limit:", a.GetIntParam("limit"))
 							return &DevicesResponse{DeviceType: "catdog"}, nil
 						},
+						Request: ParamInfo{},
 						Response: DevicesResponse{},
 						Errors: []*Error{
 							ErrUnauthorized,
@@ -55,8 +58,10 @@ func main() {
 	bp := api.GetBlueprint()
 	fmt.Println(bp)
 
-	r := api.Router()
-	http.ListenAndServe(":8080", r)
+	//r := api.Router()
+	//http.ListenAndServe(":8080", r)
+
+	//api.GetCobra().Execute()
 
 	//mk := markdown.ToHTML([]byte(bp), nil, nil)
 	//http.HandleFunc("/docs", func(w http.ResponseWriter, r *http.Request){
