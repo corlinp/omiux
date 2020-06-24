@@ -2,19 +2,24 @@ package omiux
 
 import "fmt"
 
-var HeaderBearerToken = &Header{
-	Name:     "Authorization",
-	Example:  "Bearer XXX.YYY.ZZZ",
-	Required: true,
-}
-
-type Header struct {
+type RequestHeader struct {
 	Name string
 	Example string
 	Default string
 	Required bool
 }
 
-func (h *Header) GetBlueprint() string {
+func (h *RequestHeader) GetBlueprint() string {
+	return fmt.Sprintf("            %s: %s", h.Name, h.Example)
+}
+
+type ResponseHeader struct {
+	Name string
+	Example string
+	Default string
+	Required bool
+}
+
+func (h *ResponseHeader) GetBlueprint() string {
 	return fmt.Sprintf("            %s: %s", h.Name, h.Example)
 }

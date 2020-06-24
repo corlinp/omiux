@@ -9,6 +9,11 @@ type simpleWriter struct {
 	strings.Builder
 }
 
+
+func (b *simpleWriter) FS(s string, v ...interface{}) {
+	b.WriteString(fmt.Sprintf(s, v...))
+}
+
 func (b *simpleWriter) F(s string, v ...interface{}) {
 	b.WriteString(fmt.Sprintf(s, v...))
 	b.WriteString("\n")

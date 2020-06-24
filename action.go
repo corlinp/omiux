@@ -11,7 +11,8 @@ type Action struct {
 	Name        string
 	Description string
 	Params      []Param
-	Headers      []*Header
+	RequestHeaders      []*RequestHeader
+	ResponseHeaders      []*ResponseHeader
 	Request interface{}
 	Response    interface{}
 	Errors 	    []*Error
@@ -36,9 +37,9 @@ func (a *Action) GetBlueprint(ep *Endpoint) string {
 		out.P("+ Request")
 	}
 	out.P()
-	if len(a.Headers) > 0 {
+	if len(a.RequestHeaders) > 0 {
 		out.P("    + Headers\n")
-		for _, h := range a.Headers {
+		for _, h := range a.RequestHeaders {
 			out.P(h.GetBlueprint())
 		}
 		out.P()
@@ -51,8 +52,17 @@ func (a *Action) GetBlueprint(ep *Endpoint) string {
 		out.P("\n")
 	}
 
+	out.P("+ Response 200  (application/json)\n")
+	if len(a.RequestHeaders) > 0 {
+		out.P("    + Headers\n")
+		for _, h := range a.RequestHeaders {
+			out.P(h.GetBlueprint())
+		}
+		out.P()
+	}
+
 	if a.Response != nil {
-		out.P("+ Response 200  (application/json)\n\n    + Body\n")
+		out.P("    + Body\n")
 		j, _ := json.MarshalIndent(a.Response, "            ", "    ")
 		out.S("            ")
 		out.Write(j)

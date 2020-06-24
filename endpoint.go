@@ -1,6 +1,7 @@
 package omiux
 
 import (
+	"fmt"
 	"strings"
 )
 
@@ -24,7 +25,13 @@ func (ep *Endpoint) GetBlueprint() string {
 		allParamsList = append(allParamsList, n)
 	}
 	out := &simpleWriter{}
-	out.F("## %s [%s{?%s}]\n", ep.Name, ep.Path, strings.Join(allParamsList, ","))
+	paramString := ""
+	if len(allParamsList) > 0 {
+		paramString = fmt.Sprintf("{?%s}", strings.Join(allParamsList, ","))
+	}
+	out.FS("## %s [%s%s]\n", ep.Name, ep.Path, paramString)
+	out.P()
+	out.P()
 	out.P(ep.Description)
 	for _, a := range ep.Actions {
 		out.P()
