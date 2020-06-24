@@ -37,13 +37,12 @@ func (a *Action) GetBlueprint(ep *Endpoint) string {
 		out.P("+ Request")
 	}
 	out.P()
-	if len(a.RequestHeaders) > 0 {
-		out.P("    + Headers\n")
-		for _, h := range a.RequestHeaders {
-			out.P(h.GetBlueprint())
-		}
-		out.P()
+	out.P("    + Headers\n")
+	for _, h := range a.RequestHeaders {
+		out.P(h.GetBlueprint())
 	}
+	out.P()
+
 	if a.Request != nil {
 		out.P("    + Body\n")
 		j, _ := json.MarshalIndent(a.Request, "            ", "    ")
@@ -53,13 +52,12 @@ func (a *Action) GetBlueprint(ep *Endpoint) string {
 	}
 
 	out.P("+ Response 200  (application/json)\n")
-	if len(a.RequestHeaders) > 0 {
-		out.P("    + Headers\n")
-		for _, h := range a.RequestHeaders {
-			out.P(h.GetBlueprint())
-		}
-		out.P()
+	out.P("    + Headers\n")
+	out.P(headerRequestID.GetBlueprint())
+	for _, h := range a.ResponseHeaders {
+		out.P(h.GetBlueprint())
 	}
+	out.P()
 
 	if a.Response != nil {
 		out.P("    + Body\n")
@@ -91,6 +89,7 @@ type Context struct {
 	Writer http.ResponseWriter
 	Request *http.Request
 	params map[string]interface{}
+	RequestID string
 }
 
 func (a *Context) GetStringParam(name string) string {
@@ -115,6 +114,7 @@ func (a *Action) parseRequest(w http.ResponseWriter, r *http.Request) (*Context,
 		Writer: w,
 		Request: r,
 		params: make(map[string]interface{}),
+		RequestID: generateRequestID(),
 	}
 	for _, p := range a.Params {
 		s := r.URL.Query().Get(p.Info().Name)
@@ -128,6 +128,8 @@ func (a *Action) parseRequest(w http.ResponseWriter, r *http.Request) (*Context,
 }
 
 func (a *Action) contexter(w http.ResponseWriter, r *http.Request) {
+	reqID := generateRequestID()
+	w.Header().Add("X-Request-ID", reqID)
 	ac, err := a.parseRequest(w, r)
 	if err != nil {
 		w.WriteHeader(ErrParsingParameter.Status)
@@ -137,10 +139,12 @@ func (a *Action) contexter(w http.ResponseWriter, r *http.Request) {
 			Message: ErrParsingParameter.Message,
 			Info:    err.Error(),
 			Path:    r.RequestURI,
+			RequestID: reqID,
 		}
 		_ = json.NewEncoder(w).Encode(errResp)
 		return
 	}
+	ac.RequestID = reqID
 	out, rerr := a.Run(ac)
 	if rerr != nil {
 		w.WriteHeader(rerr.Status)
@@ -150,6 +154,7 @@ func (a *Action) contexter(w http.ResponseWriter, r *http.Request) {
 			Message: rerr.Message,
 			Info:    rerr.info,
 			Path:    r.RequestURI,
+			RequestID: reqID,
 		}
 		_ = json.NewEncoder(w).Encode(errResp)
 		return

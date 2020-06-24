@@ -1,12 +1,11 @@
 package omiux
 
-import "net/http"
-
-var ErrUnauthorized = &Error {
-	Status: http.StatusUnauthorized,
-	Code: "Unauthorized",
-	Message: "you do not have permission to perform this action",
-}
+import (
+	"github.com/oklog/ulid"
+	"math/rand"
+	"net/http"
+	"time"
+)
 
 var ErrParsingParameter = &Error{
 	Status:  http.StatusBadRequest,
@@ -52,5 +51,11 @@ type ErrorResponse struct {
 	Message   string      `json:"message,omitempty"`
 	Info      string      `json:"info,omitempty"`
 	Path      string      `json:"resource,omitempty"`
-	//RequestId string `json:"request_id,omitempty"`
+	RequestID string `json:"request_id,omitempty"`
+}
+
+func generateRequestID() string {
+	t := time.Now()
+	entropy := ulid.Monotonic(rand.New(rand.NewSource(t.UnixNano())), 0)
+	return ulid.MustNew(ulid.Timestamp(t), entropy).String()
 }
