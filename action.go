@@ -145,7 +145,16 @@ func (a *Action) contexter(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	ac.RequestID = reqID
-	out, rerr := a.Run(ac)
+
+	var out interface{}
+	var rerr *Error
+
+	if a.Run != nil {
+		out, rerr = a.Run(ac)
+	} else {
+		out = a.Response
+	}
+
 	if rerr != nil {
 		w.WriteHeader(rerr.Status)
 		errResp := &ErrorResponse{
