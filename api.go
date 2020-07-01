@@ -56,10 +56,7 @@ func (api *API) GetCobra() *cobra.Command {
 			a := a
 			ep := ep
 			aCmd := &cobra.Command{
-				Use: strings.Trim(strings.ReplaceAll(
-					strings.ToLower(strings.ReplaceAll(
-						a.Name, " ", "-")),
-						strings.ToLower(a.Name), ""), "-"),
+				Use: a.CmdName,
 				Short: a.Name,
 				Long: a.Description,
 				Run: func(cmd *cobra.Command, args []string) {
@@ -76,7 +73,7 @@ func (api *API) GetCobra() *cobra.Command {
 					}
 					query := q.Encode()
 					req.URL.RawQuery = query
-					_, _ = fmt.Fprintf(os.Stderr, "%s %s\n\n", a.Method, query)
+					_, _ = fmt.Fprintln(os.Stderr, a.Method + " " + query)
 					resp, err := http.DefaultClient.Do(req)
 					if err != nil {
 						panic(err)

@@ -10,6 +10,7 @@ type Action struct {
 	Method      string
 	Name        string
 	Description string
+	CmdName 	string
 	Params      []Param
 	RequestHeaders      []*RequestHeader
 	ResponseHeaders      []*ResponseHeader
