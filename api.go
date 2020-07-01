@@ -63,16 +63,26 @@ func (api *API) GetCobra() *cobra.Command {
 					if err != nil {
 						panic(err)
 					}
+					for _, h := range a.RequestHeaders {
+						v := os.Getenv(h.Name)
+						if v != "" {
+							req.Header.Add(h.Name, v)
+						} else {
+							v := os.Getenv("HEADER_" + h.Name)
+							if v != "" {
+								req.Header.Add(h.Name, v)
+							}
+						}
+					}
 					q := req.URL.Query()
 					for _, p := range a.Params {
 						flag, err := cmd.Flags().GetString(p.Info().Name)
-						if err == nil {
+						if err == nil && flag != "" {
 							q.Add(p.Info().Name, flag)
 						}
 					}
-					query := q.Encode()
-					req.URL.RawQuery = query
-					_, _ = fmt.Fprintln(os.Stderr, a.Method + " " + query)
+					req.URL.RawQuery = q.Encode()
+					_, _ = fmt.Fprintln(os.Stderr, a.Method + " " + req.URL.String())
 					resp, err := http.DefaultClient.Do(req)
 					if err != nil {
 						panic(err)
