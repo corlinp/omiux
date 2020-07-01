@@ -52,14 +52,17 @@ func (api *API) GetCobra() *cobra.Command {
 			Short: ep.Description,
 		}
 		for _, a := range ep.Actions {
+			//set these guys in local scope :)
+			a := a
+			ep := ep
 			aCmd := &cobra.Command{
-				Use: strings.ToLower(strings.ReplaceAll(a.Name, " ", "-")),
+				Use: strings.Trim(strings.ReplaceAll(
+					strings.ToLower(strings.ReplaceAll(
+						a.Name, " ", "-")),
+						strings.ToLower(a.Name), ""), "-"),
 				Short: a.Name,
 				Long: a.Description,
 				Run: func(cmd *cobra.Command, args []string) {
-					//set these guys in local scope :)
-					a := a
-					ep := ep
 					req, err := http.NewRequest(a.Method, api.Host + ep.Path, nil)
 					if err != nil {
 						panic(err)
