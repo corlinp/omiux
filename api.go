@@ -7,7 +7,6 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
-	"strings"
 )
 
 type API struct {
@@ -48,7 +47,7 @@ func (api *API) GetCobra() *cobra.Command {
 	}
 	for _, ep := range api.Endpoints {
 		epCmd := &cobra.Command{
-			Use: strings.ToLower(strings.ReplaceAll(ep.Name, " ", "-")),
+			Use: ep.CmdName,
 			Short: ep.Description,
 		}
 		for _, a := range ep.Actions {

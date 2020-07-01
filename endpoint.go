@@ -9,6 +9,7 @@ type Endpoint struct {
 	Path        string
 	Name        string
 	Description string
+	CmdName 	string
 	Actions     []*Action
 }
 
