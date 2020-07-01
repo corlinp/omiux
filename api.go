@@ -1,9 +1,12 @@
 package omiux
 
 import (
+	"fmt"
 	"github.com/gorilla/mux"
 	"github.com/spf13/cobra"
+	"io/ioutil"
 	"net/http"
+	"os"
 	"strings"
 )
 
@@ -66,6 +69,16 @@ func (api *API) GetCobra() *cobra.Command {
 						}
 					}
 					req.URL.RawQuery = q.Encode()
+					_, _ = fmt.Fprintf(os.Stderr, "%s %s", a.Method, q.Encode())
+					resp, err := http.DefaultClient.Do(req)
+					if err != nil {
+						panic(err)
+					}
+					d, err := ioutil.ReadAll(resp.Body)
+					if err != nil {
+						panic(err)
+					}
+					fmt.Println(string(d))
 				},
 			}
 			for _, p := range a.Params {
