@@ -2,6 +2,7 @@ package omiux
 
 import (
 	"encoding/json"
+	"fmt"
 	"github.com/pkg/errors"
 	"net/http"
 )
@@ -55,6 +56,7 @@ func (a *Action) GetBlueprint(ep *Endpoint) string {
 	out.P("+ Response 200  (application/json)\n")
 	out.P("    + Headers\n")
 	out.P(headerRequestID.GetBlueprint())
+	out.P(headerContentLength.GetBlueprint())
 	for _, h := range a.ResponseHeaders {
 		out.P(h.GetBlueprint())
 	}
@@ -142,6 +144,8 @@ func (a *Action) contexter(w http.ResponseWriter, r *http.Request) {
 			Path:    r.RequestURI,
 			RequestID: reqID,
 		}
+		out, _ := json.Marshal(errResp)
+		w.Header().Add("Content-Length", fmt.Sprint(len(out)))
 		_ = json.NewEncoder(w).Encode(errResp)
 		return
 	}
@@ -166,10 +170,14 @@ func (a *Action) contexter(w http.ResponseWriter, r *http.Request) {
 			Path:    r.RequestURI,
 			RequestID: reqID,
 		}
+		out, _ := json.Marshal(errResp)
+		w.Header().Add("Content-Length", fmt.Sprint(len(out)))
 		_ = json.NewEncoder(w).Encode(errResp)
 		return
 	}
 	if out != nil {
+		out, _ := json.Marshal(out)
+		w.Header().Add("Content-Length", fmt.Sprint(len(out)))
 		_ = json.NewEncoder(w).Encode(out)
 		return
 	}

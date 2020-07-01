@@ -26,3 +26,8 @@ var headerRequestID = &ResponseHeader{
 	Name:     "X-Request-ID",
 	Example:  "01D78XYFJ1PRM1WPBCBT3VHMNV",
 }
+
+var headerContentLength = &ResponseHeader{
+	Name:     "Content-Length",
+	Example:  "3376",
+}
