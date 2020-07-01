@@ -57,6 +57,9 @@ func (api *API) GetCobra() *cobra.Command {
 				Short: a.Name,
 				Long: a.Description,
 				Run: func(cmd *cobra.Command, args []string) {
+					//set these guys in local scope :)
+					a := a
+					ep := ep
 					req, err := http.NewRequest(a.Method, api.Host + ep.Path, nil)
 					if err != nil {
 						panic(err)
@@ -68,8 +71,9 @@ func (api *API) GetCobra() *cobra.Command {
 							q.Add(p.Info().Name, flag)
 						}
 					}
-					req.URL.RawQuery = q.Encode()
-					_, _ = fmt.Fprintf(os.Stderr, "%s %s", a.Method, q.Encode())
+					query := q.Encode()
+					req.URL.RawQuery = query
+					_, _ = fmt.Fprintf(os.Stderr, "%s %s\n\n", a.Method, query)
 					resp, err := http.DefaultClient.Do(req)
 					if err != nil {
 						panic(err)
