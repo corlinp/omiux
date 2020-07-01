@@ -44,7 +44,7 @@ func (p *StringParam) TypeName() string {
 func (p *StringParam) Parse(s string) (interface{}, error) {
 	if s == "" {
 		if p.Required {
-			return nil, errors.New("this should be a nice error")
+			return nil, errors.New("required string parameter is not present")
 		}
 		return p.Default, nil
 	}
@@ -67,7 +67,7 @@ func (p *IntParam) TypeName() string {
 func (p *IntParam) Parse(s string) (interface{}, error) {
 	if s == "" {
 		if p.Required {
-			return nil, errors.New("this should be a nice int error")
+			return nil, errors.New("required integer parameter is not present")
 		}
 		return strconv.ParseInt(p.Default, 10, 32)
 	}

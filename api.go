@@ -1,9 +1,9 @@
 package omiux
 
 import (
-	"fmt"
 	"github.com/gorilla/mux"
 	"github.com/spf13/cobra"
+	"net/http"
 	"strings"
 )
 
@@ -54,8 +54,18 @@ func (api *API) GetCobra() *cobra.Command {
 				Short: a.Name,
 				Long: a.Description,
 				Run: func(cmd *cobra.Command, args []string) {
-					v, err := cmd.Flags().GetString("deviceType")
-					fmt.Println(v, err)
+					req, err := http.NewRequest(a.Method, api.Host + ep.Path, nil)
+					if err != nil {
+						panic(err)
+					}
+					q := req.URL.Query()
+					for _, p := range a.Params {
+						flag, err := cmd.Flags().GetString(p.Info().Name)
+						if err == nil {
+							q.Add(p.Info().Name, flag)
+						}
+					}
+					req.URL.RawQuery = q.Encode()
 				},
 			}
 			for _, p := range a.Params {
