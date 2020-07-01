@@ -2,7 +2,6 @@ package omiux
 
 import (
 	"encoding/json"
-	"fmt"
 	"github.com/pkg/errors"
 	"net/http"
 )
@@ -144,8 +143,8 @@ func (a *Action) contexter(w http.ResponseWriter, r *http.Request) {
 			Path:    r.RequestURI,
 			RequestID: reqID,
 		}
-		out, _ := json.Marshal(errResp)
-		w.Header().Add("Content-Length", fmt.Sprint(len(out)))
+		//out, _ := json.Marshal(errResp)
+		//w.Header().Add("Content-Length", fmt.Sprint(len(out)))
 		_ = json.NewEncoder(w).Encode(errResp)
 		return
 	}
@@ -170,14 +169,14 @@ func (a *Action) contexter(w http.ResponseWriter, r *http.Request) {
 			Path:    r.RequestURI,
 			RequestID: reqID,
 		}
-		out, _ := json.Marshal(errResp)
-		w.Header().Add("Content-Length", fmt.Sprint(len(out)))
+		//out, _ := json.Marshal(errResp)
+		//w.Header().Add("Content-Length", fmt.Sprint(len(out)))
 		_ = json.NewEncoder(w).Encode(errResp)
 		return
 	}
 	if out != nil {
-		out, _ := json.Marshal(out)
-		w.Header().Add("Content-Length", fmt.Sprint(len(out)))
+		//out, _ := json.Marshal(out)
+		//w.Header().Add("Content-Length", fmt.Sprint(len(out)))
 		_ = json.NewEncoder(w).Encode(out)
 		return
 	}
